@@ -1,0 +1,26 @@
+{
+  "name": "cubes",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "animejs": "^3.2.1",
+    "three": "0.134",
+    "troisjs": "^0.3.4",
+    "vue": "^3.2.37"
+  },
+  "devDependencies": {
+    "@types/animejs": "^3.1.5",
+    "@types/node": "^18.7.5",
+    "@vitejs/plugin-vue": "^3.0.3",
+    "prettier": "^2.7.1",
+    "typescript": "^4.6.4",
+    "vite": "^3.0.7",
+    "vue-tsc": "^0.39.5"
+  }
+}
