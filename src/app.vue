@@ -18,7 +18,7 @@ function animate() {
     x: box.mesh.scale.x,
     y: box.mesh.scale.y,
     z: box.mesh.scale.z,
-  }))
+  }));
 
   anime({
     targets: scales,
@@ -36,13 +36,13 @@ function animate() {
         boxes.value[index].mesh.scale.x = scale.x;
         boxes.value[index].mesh.scale.y = scale.y;
         boxes.value[index].mesh.scale.z = scale.z;
-      })
-    }
+      });
+    },
   });
 }
 
 function init() {
-  window.addEventListener('load', animate)
+  window.addEventListener('load', animate);
 }
 
 onMounted(init);
