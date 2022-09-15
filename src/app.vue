@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, render } from 'vue';
+import { ref } from 'vue';
 import { Renderer, Camera, Scene, Group, Box, MatcapMaterial } from 'troisjs';
+import { DefaultLoadingManager } from 'three';
 import anime from 'animejs';
 
 const size = 1;
@@ -10,42 +11,55 @@ const quantity = 3;
 const position = spacing * 2 - quantity;
 
 const renderer = ref<InstanceType<typeof Renderer>>(null!);
+const camera = ref<InstanceType<typeof Camera>>(null!);
+const scene = ref<InstanceType<typeof Scene>>(null!);
 const group = ref<InstanceType<typeof Group>>(null!);
 const boxes = ref<InstanceType<typeof Box>[]>(null!);
+const material = ref<InstanceType<typeof MatcapMaterial>>(null!);
 
 function animate() {
   const scales = boxes.value.map((box) => ({
-    x: box.mesh.scale.x,
-    y: box.mesh.scale.y,
-    z: box.mesh.scale.z,
+    x: box.mesh?.scale.x || 0,
+    y: box.mesh?.scale.y || 0,
+    z: box.mesh?.scale.z || 0,
   }));
 
   anime({
     targets: scales,
-    x: 1.25,
-    y: 1.25,
-    z: 1.25,
-    direction: 'alternate',
+    x: [
+      { value: 1.25, duration: 250 },
+      { value: 1, duration: 250 },
+    ],
+    y: [
+      { value: 1.25, duration: 250 },
+      { value: 1, duration: 250 },
+    ],
+    z: [
+      { value: 1.25, duration: 250 },
+      { value: 1, duration: 250 },
+    ],
     easing: 'cubicBezier(1, -.6, .25, 1)',
     loop: true,
-    delay: anime.stagger(15),
+    delay: anime.stagger(50, { grid: [3, 9], from: 'last' }),
     update() {
       scales.forEach((scale, index) => {
-        if (!boxes.value[index]) return;
+        const mesh = boxes.value[index]?.mesh;
 
-        boxes.value[index].mesh.scale.x = scale.x;
-        boxes.value[index].mesh.scale.y = scale.y;
-        boxes.value[index].mesh.scale.z = scale.z;
+        if (!mesh) return;
+
+        mesh.scale.x = scale.x;
+        mesh.scale.y = scale.y;
+        mesh.scale.z = scale.z;
       });
     },
   });
 }
 
 function init() {
-  window.addEventListener('load', animate);
+  animate();
 }
 
-onMounted(init);
+DefaultLoadingManager.onLoad = init;
 </script>
 
 <template>
@@ -53,20 +67,23 @@ onMounted(init);
     ref="renderer"
     :orbit-ctrl="{
       autoRotate: true,
-      enableDamping: true,
-      dampingFactor: 0.05,
+      enableZoom: false,
     }"
     antialias
     resize
     shadow
   >
     <Camera
+      ref="camera"
       :position="{
         z: 10,
       }"
     />
 
-    <Scene background="#111111">
+    <Scene
+      ref="scene"
+      background="#111111"
+    >
       <Group
         ref="group"
         :position="{
@@ -92,7 +109,10 @@ onMounted(init);
                 receive-shadow
                 cast-shadow
               >
-                <MatcapMaterial name="2E763A_78A0B7_B3D1CF_14F209" />
+                <MatcapMaterial
+                  ref="material"
+                  name="2E763A_78A0B7_B3D1CF_14F209"
+                />
               </Box>
             </template>
           </template>
