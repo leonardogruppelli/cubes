@@ -202,9 +202,6 @@ onMounted(init);
               <Box
                 v-for="column in columns"
                 ref="boxes"
-                :width-segments="10"
-                :height-segments="10"
-                :depth-segments="10"
                 :size="size"
                 :position="{
                   x: row * increment,
