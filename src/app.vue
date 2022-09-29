@@ -4,7 +4,8 @@ import { Renderer, Camera, Scene, Group, Box, MatcapMaterial } from 'troisjs';
 import { Vector3, Object3D, Box3, Group as Pivot } from 'three';
 import anime from 'animejs';
 
-import { TimerEnum } from './types';
+import { TimerEnum } from './types/timer';
+import { DirectionType } from './types/direction';
 
 const size = 1;
 const spacing = 0.25;
@@ -79,7 +80,7 @@ function presentate() {
   }, TimerEnum.TIMEOUT);
 }
 
-function animate() {
+function createPivot(direction: DirectionType) {
   const index = Math.floor(Math.random() * rows);
 
   const object = new Object3D();
@@ -102,17 +103,27 @@ function animate() {
     center.add(box.position as Vector3);
   });
 
-  pivot.position.set(
-    Math.abs(center.x),
-    Math.abs(center.y),
-    Math.abs(center.z)
-  );
+  const x = Math.abs(center.x);
+  const y = Math.abs(center.y);
+  const z = Math.abs(center.z);
+
+  pivot.position.set(x, y, z);
 
   cube.value.add(pivot);
 
+  return pivot;
+}
+
+function animate() {
+  const direction: DirectionType = Math.round(Math.random())
+    ? 'forwards'
+    : 'backwards';
+  const pivot = createPivot(direction);
+  const value = direction === 'forwards' ? Math.PI / 2 : -Math.abs(Math.PI / 2);
+
   anime({
     targets: pivot.rotation,
-    x: Math.PI / 2,
+    x: value,
     duration: TimerEnum.ROTATE,
     easing: 'easeOutQuint',
     complete: animate,
