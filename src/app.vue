@@ -80,7 +80,7 @@ function presentate() {
   }, TimerEnum.TIMEOUT);
 }
 
-function createPivot(direction: DirectionType) {
+function createPivot() {
   const index = Math.floor(Math.random() * rows);
 
   const object = new Object3D();
@@ -118,7 +118,7 @@ function animate() {
   const direction: DirectionType = Math.round(Math.random())
     ? 'forwards'
     : 'backwards';
-  const pivot = createPivot(direction);
+  const pivot = createPivot();
   const value = direction === 'forwards' ? Math.PI / 2 : -Math.abs(Math.PI / 2);
 
   anime({
