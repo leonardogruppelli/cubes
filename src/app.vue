@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { Renderer, Camera, Scene, Group, Box, MatcapMaterial } from 'troisjs';
-import { Vector3 } from 'three';
+import { Vector3, Object3D, Box3, Group as Pivot } from 'three';
 import anime from 'animejs';
 
-import { DurationsEnum } from './types';
+import { TimerEnum } from './types';
 
 const size = 1;
 const spacing = 0.25;
@@ -27,7 +27,7 @@ function enter(element: HTMLElement, complete: () => void) {
     targets: element,
     opacity: [0, 1],
     easing: 'linear',
-    duration: DurationsEnum.ANIMATION,
+    duration: TimerEnum.FADE,
     complete,
   });
 }
@@ -37,19 +37,18 @@ function leave(element: HTMLElement, complete: () => void) {
     targets: element,
     opacity: [1, 0],
     easing: 'linear',
-    duration: DurationsEnum.ANIMATION,
+    duration: TimerEnum.FADE,
     complete,
   });
 }
 
 function center() {
   const center = new Vector3();
-  const children = boxes.value;
-  const count = children.length;
+  const count = boxes.value.length;
 
-  for (let index = 0; index < count; index++) {
-    center.add(children[index].position as Vector3);
-  }
+  boxes.value.forEach((box) => {
+    center.add(box.position as Vector3);
+  });
 
   center.divideScalar(count);
 
@@ -68,7 +67,7 @@ function load() {
 
       return even ? 360 : -360;
     },
-    duration: DurationsEnum.ANIMATION,
+    duration: TimerEnum.FADE,
     easing: 'linear',
     loop: true,
   });
@@ -77,58 +76,58 @@ function load() {
 function presentate() {
   setTimeout(() => {
     loading.value = false;
-  }, DurationsEnum.TIMEOUT);
+  }, TimerEnum.TIMEOUT);
 }
 
 function animate() {
-  // anime({
-  //   targets: groups.value[2].group.rotation,
-  //   z: 2,
-  // });
-  // const targets = groups.value.map((group) => ({
-  //   x: group.group.rotation?.x || 0,
-  //   y: group.group?.rotation?.y || 0,
-  //   z: group.group?.rotation?.z || 0,
-  // }));
-  // anime({
-  //   targets,
-  //   x: [
-  //     { value: 1.15, duration: 250 },
-  //     { value: 1, duration: 250 },
-  //   ],
-  //   y: [
-  //     { value: 1.15, duration: 250 },
-  //     { value: 1, duration: 250 },
-  //   ],
-  //   z: [
-  //     { value: 1.15, duration: 250 },
-  //     { value: 1, duration: 250 },
-  //   ],
-  //   easing: 'cubicBezier(1, -.6, .25, 1)',
-  //   loop: true,
-  //   delay: anime.stagger(50, { grid: [3, 9], from: 'last' }),
-  //   update() {
-  //     scales.forEach((scale, index) => {
-  //       const mesh = boxes.value[index]?.mesh;
-  //       if (!mesh) return;
-  //       mesh.scale.x = scale.x;
-  //       mesh.scale.y = scale.y;
-  //       mesh.scale.z = scale.z;
-  //     });
-  //   },
-  // });
+  const index = Math.floor(Math.random() * rows);
+
+  const object = new Object3D();
+
+  object.add(groups.value[index].group);
+
+  const box = new Box3().setFromObject(object);
+
+  box.center(object.position);
+
+  object.position.multiplyScalar(-1);
+
+  const pivot = new Pivot();
+
+  pivot.add(object);
+
+  const center = new Vector3();
+
+  pivot.children.forEach((box) => {
+    center.add(box.position as Vector3);
+  });
+
+  pivot.position.set(
+    Math.abs(center.x),
+    Math.abs(center.y),
+    Math.abs(center.z)
+  );
+
+  cube.value.add(pivot);
+
+  anime({
+    targets: pivot.rotation,
+    x: Math.PI / 2,
+    duration: TimerEnum.ROTATE,
+    easing: 'easeOutQuint',
+    complete: animate,
+  });
 }
 
 function start() {
   center();
   load();
   presentate();
+  animate();
 }
 
 function init() {
   start();
-
-  renderer.value.onAfterRender(animate);
 }
 
 onMounted(init);
@@ -188,10 +187,7 @@ onMounted(init);
             v-for="row in rows"
             ref="groups"
           >
-            <Group
-              v-for="line in lines"
-              ref="groups"
-            >
+            <template v-for="line in lines">
               <Box
                 v-for="column in columns"
                 ref="boxes"
@@ -212,7 +208,7 @@ onMounted(init);
                   name="2E763A_78A0B7_B3D1CF_14F209"
                 />
               </Box>
-            </Group>
+            </template>
           </Group>
         </Group>
       </Scene>
