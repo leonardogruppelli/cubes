@@ -13,7 +13,15 @@ import {
   UnrealBloomPass,
   HalftonePass,
 } from 'troisjs';
-import { Vector3, Object3D, Box3, Group as Pivot, Mesh } from 'three';
+import {
+  Vector3,
+  Object3D,
+  Box3,
+  Group as Pivot,
+  Mesh,
+  Color,
+  MeshPhongMaterial,
+} from 'three';
 import anime from 'animejs';
 
 import Loader from '@/components/loader.vue';
@@ -25,6 +33,13 @@ const size = 1;
 const spacing = 0.25;
 const quantity = 3;
 const increment = size + spacing;
+const colors = [
+  new Color(0x3de068),
+  new Color(0x3d84e0),
+  new Color(0x6b3de0),
+  new Color(0xe6702c),
+];
+const [color] = colors;
 
 const cube = ref<InstanceType<typeof Group>>(null!);
 const front = ref<InstanceType<typeof PointLight>>(null!);
@@ -32,74 +47,13 @@ const back = ref<InstanceType<typeof PointLight>>(null!);
 const boxes = ref<InstanceType<typeof Box>[]>(null!);
 const loading = ref<boolean>(true);
 
-function enter(element: HTMLElement, complete: () => void) {
-  anime({
-    targets: element,
-    opacity: [0, 1],
-    easing: 'linear',
-    duration: TimerEnum.FADE,
-    complete,
-  });
-}
-
-function leave(element: HTMLElement, complete: () => void) {
-  anime({
-    targets: element,
-    opacity: [1, 0],
-    easing: 'linear',
-    duration: TimerEnum.FADE,
-    complete,
-  });
-}
-
-function center() {
-  const center = new Vector3();
-  const count = boxes.value.length;
-
-  boxes.value.forEach((box) => {
-    center.add(box.position as Vector3);
-  });
-
-  center.divideScalar(count);
-
-  cube.value.group.position.x = -center.x;
-  cube.value.group.position.y = -center.y;
-  cube.value.group.position.z = -center.z;
-
-  setTimeout(lighting, TimerEnum.FADE);
-}
-
-function lighting() {
-  const position = new Vector3();
-
-  position.setFromMatrixPosition(front.value.light?.matrixWorld!);
-
-  back.value.light?.position.set(
-    Math.abs(position.x) * 2,
-    Math.abs(position.y) * 2,
-    Math.abs(position.z) * 2
-  );
-}
-
-function presentate() {
-  setTimeout(() => {
-    animate();
-
-    loading.value = false;
-  }, TimerEnum.TIMEOUT);
-}
-
-function nearby(current: number, value: number) {
-  return Math.abs(current - value) <= 0.001;
-}
-
 function wrapper(axis: AxisType) {
   const index = Math.floor(Math.random() * boxes.value.length);
   const mesh = boxes.value[index].mesh;
   const meshes: Mesh[] = [];
 
   boxes.value.forEach((box) => {
-    if (nearby(box.mesh?.position[axis]!, mesh?.position[axis]!)) {
+    if (box.mesh?.position[axis] === mesh?.position[axis]) {
       meshes.push(box.mesh!);
     }
   });
@@ -135,14 +89,68 @@ function wrapper(axis: AxisType) {
   return pivot;
 }
 
-function clear(pivot: Pivot) {
-  pivot.rotation.x = 0;
-  pivot.rotation.y = 0;
+function center() {
+  const center = new Vector3();
+  const count = boxes.value.length;
 
-  animate();
+  boxes.value.forEach((box) => {
+    center.add(box.position as Vector3);
+  });
+
+  center.divideScalar(count);
+
+  cube.value.group.position.x = -center.x;
+  cube.value.group.position.y = -center.y;
+  cube.value.group.position.z = -center.z;
+
+  setTimeout(lighting, TimerEnum.FADE);
 }
 
-function animate() {
+function lighting() {
+  const position = new Vector3();
+
+  position.setFromMatrixPosition(front.value.light?.matrixWorld!);
+
+  back.value.light?.position.set(
+    Math.abs(position.x) * 2,
+    Math.abs(position.y) * 2,
+    Math.abs(position.z) * 2
+  );
+}
+
+function coloring() {
+  const [green, blue, purple, orange] = colors;
+
+  boxes.value.forEach((box) => {
+    anime({
+      targets: [(box.mesh?.material as MeshPhongMaterial).color],
+      r: [
+        { value: green.r },
+        { value: blue.r },
+        { value: purple.r },
+        { value: orange.r },
+      ],
+      g: [
+        { value: green.g },
+        { value: blue.g },
+        { value: purple.g },
+        { value: orange.g },
+      ],
+      b: [
+        { value: green.b },
+        { value: blue.b },
+        { value: purple.b },
+        { value: orange.b },
+      ],
+      easing: 'linear',
+      direction: 'alternate',
+      duration: TimerEnum.COLORING,
+      loop: true,
+    });
+  });
+}
+
+function rotate() {
   const direction: DirectionType = Math.round(Math.random())
     ? 'forwards'
     : 'backwards';
@@ -156,6 +164,42 @@ function animate() {
     duration: TimerEnum.ROTATE,
     easing: 'easeOutQuint',
     complete: () => clear(pivot),
+  });
+}
+
+function presentate() {
+  setTimeout(() => {
+    coloring();
+    rotate();
+
+    loading.value = false;
+  }, TimerEnum.TIMEOUT);
+}
+
+function clear(pivot: Pivot) {
+  pivot.rotation.x = 0;
+  pivot.rotation.y = 0;
+
+  rotate();
+}
+
+function enter(element: HTMLElement, complete: () => void) {
+  anime({
+    targets: element,
+    opacity: [0, 1],
+    easing: 'linear',
+    duration: TimerEnum.FADE,
+    complete,
+  });
+}
+
+function leave(element: HTMLElement, complete: () => void) {
+  anime({
+    targets: element,
+    opacity: [1, 0],
+    easing: 'linear',
+    duration: TimerEnum.FADE,
+    complete,
   });
 }
 
@@ -219,7 +263,7 @@ onMounted(init);
                   receive-shadow
                   cast-shadow
                 >
-                  <PhongMaterial color="#B044F1" />
+                  <PhongMaterial :color="'#' + color.getHexString()" />
                 </Box>
               </template>
             </template>
