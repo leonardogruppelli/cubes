@@ -44,7 +44,7 @@ onMounted(animate);
   position: fixed;
   top: 0;
   left: 0;
-  background-color: #111111;
+  background-color: #000000;
   color: #ffffff;
 }
 

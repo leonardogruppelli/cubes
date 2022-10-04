@@ -245,7 +245,7 @@ onMounted(init);
         }"
       />
 
-      <Scene background="#111111">
+      <Scene background="#000000">
         <Group ref="cube">
           <PointLight ref="front" />
 
@@ -276,12 +276,12 @@ onMounted(init);
       <EffectComposer>
         <RenderPass />
 
-        <UnrealBloomPass :strength="0.75" />
-
-        <HalftonePass
-          :radius="1"
-          :scatter="0.25"
+        <UnrealBloomPass
+          :strength="0.75"
+          :radius="0.5"
         />
+
+        <HalftonePass :radius="1" />
       </EffectComposer>
     </Renderer>
   </div>
@@ -299,7 +299,7 @@ onMounted(init);
 body {
   margin: 0;
   padding: 0;
-  background-color: #111111;
+  background-color: #000000;
   font-family: 'Montserrat', sans-serif;
   box-sizing: border-box;
 }
