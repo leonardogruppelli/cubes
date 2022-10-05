@@ -239,13 +239,13 @@ onMounted(init);
       resize
       shadow
     >
-      <Camera
-        :position="{
-          z: 10,
-        }"
-      />
-
       <Scene background="#000000">
+        <Camera
+          :position="{
+            z: 10,
+          }"
+        />
+
         <Group ref="cube">
           <PointLight ref="front" />
 
